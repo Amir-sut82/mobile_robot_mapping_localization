@@ -6,7 +6,7 @@ package_name = 'map_publisher'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='0.1.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -15,7 +15,9 @@ setup(
         
        
         (os.path.join('share', package_name, 'maps'), glob('maps/*.*')),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+        # Launch files in this repository use the conventional *.launch.py
+        # suffix only in their filename stem, so install every Python launch file.
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
         
      
