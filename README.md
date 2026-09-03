@@ -130,14 +130,14 @@ The intended TF chain is `map → odom → base_link → rplidar_c1`. SLAM and t
 
 ### Differential-drive motion and odometry
 
-For wheel radius (r), wheel separation (b), and right/left angular wheel speeds (omega_R,omega_L):
+For wheel radius $r$, wheel separation $b$, and right/left angular wheel speeds $\omega_R,\omega_L$:
 
 \[
 v=\frac{r}{2}(\omega_R+\omega_L),\qquad
 \omega=\frac{r}{b}(\omega_R-\omega_L).
 \]
 
-The unicycle state is (x=[x,y,\theta]^T). Over a short interval (\Delta t), the implementation predicts
+The unicycle state is $x=[x,y,\theta]^T$. Over a short interval $\Delta t$, the implementation predicts
 
 \[
 x_{t+1}=x_t+v\Delta t\cos\theta_t,\quad
@@ -155,7 +155,7 @@ The SLAM motion model also expresses two odometry readings as
 
 ### EKF (wheel odometry + IMU yaw)
 
-The Python EKF state is (x=[x,y,\theta]^T). Its prediction is the motion model above. Linearizing it gives
+The Python EKF state is $x=[x,y,\theta]^T$. Its prediction is the motion model above. Linearizing it gives
 
 \[
 F=\frac{\partial f}{\partial x}=\begin{bmatrix}
@@ -170,13 +170,13 @@ G=\frac{\partial f}{\partial [v,\omega]}=\begin{bmatrix}
 \end{bmatrix}.
 \]
 
-With control-noise covariance (Q_u=\operatorname{diag}(\sigma_v^2,\sigma_\omega^2)),
+With control-noise covariance $Q_u=\operatorname{diag}(\sigma_v^2,\sigma_\omega^2)$,
 
 \[
 P^- = F P F^T + GQ_uG^T.
 \]
 
-The IMU supplies a yaw measurement (z=\theta+v_z), so (H=[0\;0\;1]). The update is
+The IMU supplies a yaw measurement $z=\theta+v_z$, so $H=[0\;0\;1]$. The update is
 
 \[
 \nu=\operatorname{wrap}(z-Hx^-),\quad
@@ -187,7 +187,7 @@ K=P^-H^TS^{-1},
 x^+=x^-+K\nu,\qquad P^+=(I-KH)P^-.
 \]
 
-Angles are wrapped to ((-\pi,\pi]). This EKF fuses only wheel odometry and IMU orientation; LiDAR is used later by the particle filter or custom SLAM, not directly in this EKF.
+Angles are wrapped to $(-\pi,\pi]$. This EKF fuses only wheel odometry and IMU orientation; LiDAR is used later by the particle filter or custom SLAM, not directly in this EKF.
 
 ### SLAM and occupancy-grid mapping
 
@@ -212,11 +212,11 @@ l_t(m_i)=l_{t-1}(m_i)+
 \log\frac{p_0}{1-p_0},
 \]
 
-with (p(m_i)=1/(1+e^{-l(m_i)})). Bresenham ray tracing marks cells before a hit as free and the endpoint as occupied; log-odds are clamped to prevent numerical saturation. The map is published as `nav_msgs/OccupancyGrid` (`0` free, `100` occupied, `-1` unknown).
+with $p(m_i)=1/(1+e^{-l(m_i)})$. Bresenham ray tracing marks cells before a hit as free and the endpoint as occupied; log-odds are clamped to prevent numerical saturation. The map is published as `nav_msgs/OccupancyGrid` (`0` free, `100` occupied, `-1` unknown).
 
 ### Scan matching
 
-For a LiDAR point ((x_r,y_r)) and pose ((x,y,\theta)), the map-frame endpoint is
+For a LiDAR point $(x_r,y_r)$ and pose $(x,y,\theta)$, the map-frame endpoint is
 
 \[
 \begin{bmatrix}x_w\\y_w\end{bmatrix}=
@@ -231,11 +231,11 @@ The matcher scores how likely transformed endpoints are occupied (bilinear inter
 \frac{\partial S}{\partial x}\approx\frac{S(x+\epsilon)-S(x-\epsilon)}{2\epsilon},
 \]
 
-with equivalent terms for (y) and (\theta). The pose update is constrained by a search window and a maximum iteration count. There is no loop closure or pose-graph optimization, so long trajectories accumulate drift.
+with equivalent terms for $y$ and $\theta$. The pose update is constrained by a search window and a maximum iteration count. There is no loop closure or pose-graph optimization, so long trajectories accumulate drift.
 
 ### Particle-filter localization
 
-Given a fixed map (m), localization follows
+Given a fixed map $m$, localization follows
 
 \[
 bel(x_t)=\eta\,p(z_t\mid x_t,m)\int p(x_t\mid u_t,x_{t-1})bel(x_{t-1})dx_{t-1}.
@@ -255,7 +255,7 @@ The endpoint sensor model used here is
 p(z\mid x,m)=z_{hit}\exp\left(-\frac{d^2}{2\sigma^2}\right)+\frac{z_{rand}}{z_{max}},
 \]
 
-where (d) is the nearest occupied-map distance for a beam endpoint. The reported pose averages (x,y) directly and averages heading on the unit circle:
+where $d$ is the nearest occupied-map distance for a beam endpoint. The reported pose averages $x,y$ directly and averages heading on the unit circle:
 
 \[
 \hat\theta=\operatorname{atan2}\left(\sum_i\bar w_i\sin\theta_i,\sum_i\bar w_i\cos\theta_i\right).
@@ -269,7 +269,7 @@ The planner inflates occupied cells by the robot footprint radius
 r_{footprint}=s\sqrt{(L/2)^2+(W/2)^2},
 \]
 
-where (s) is the safety margin. It then searches an 8-connected grid with cardinal cost (1), diagonal cost \(\sqrt2\), and Euclidean heuristic:
+where $s$ is the safety margin. It then searches an 8-connected grid with cardinal cost $1$, diagonal cost $\sqrt2$, and Euclidean heuristic:
 
 \[
 f(n)=g(n)+h(n),\qquad h(n)=\sqrt{(x_n-x_g)^2+(y_n-y_g)^2}.
