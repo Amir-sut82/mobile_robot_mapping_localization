@@ -1,9 +1,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <filesystem>
 #include <mutex>
+#include <vector>
 
 namespace robot_slam
 {
@@ -17,10 +19,14 @@ public:
         this->declare_parameter<std::string>("map_topic", "/map");
         this->declare_parameter<std::string>("output_dir", ".");
         this->declare_parameter<std::string>("map_name", "slam_map");
+        this->declare_parameter<bool>("auto_save", true);
+        this->declare_parameter<double>("auto_save_interval", 5.0);
 
         map_topic_ = this->get_parameter("map_topic").as_string();
         output_dir_ = this->get_parameter("output_dir").as_string();
         map_name_ = this->get_parameter("map_name").as_string();
+        auto_save_ = this->get_parameter("auto_save").as_bool();
+        auto_save_interval_ = std::max(0.1, this->get_parameter("auto_save_interval").as_double());
 
         std::filesystem::create_directories(output_dir_);
 
@@ -29,15 +35,19 @@ public:
             map_topic_, map_qos,
             std::bind(&MapSaverNode::mapCallback, this, std::placeholders::_1));
 
-        // Set up a timer to save the map every 5 seconds
-        timer_ = this->create_wall_timer(
-            std::chrono::seconds(5),
-            std::bind(&MapSaverNode::saveMapAutomatically, this));
+        if (auto_save_) {
+            timer_ = this->create_wall_timer(
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::duration<double>(auto_save_interval_)),
+                std::bind(&MapSaverNode::saveMapAutomatically, this));
+        }
 
         RCLCPP_INFO(this->get_logger(), "Map Saver Node initialized");
         RCLCPP_INFO(this->get_logger(), "  Subscribing to: %s", map_topic_.c_str());
         RCLCPP_INFO(this->get_logger(), "  Output directory: %s", output_dir_.c_str());
         RCLCPP_INFO(this->get_logger(), "  Map name: %s", map_name_.c_str());
+        RCLCPP_INFO(this->get_logger(), "  Auto-save: %s (%.1f s)",
+                    auto_save_ ? "enabled" : "disabled", auto_save_interval_);
     }
 
 private:
@@ -175,6 +185,8 @@ private:
     std::string map_topic_;
     std::string output_dir_;
     std::string map_name_;
+    bool auto_save_ = true;
+    double auto_save_interval_ = 5.0;
 
     int save_count_ = 0;
 };
