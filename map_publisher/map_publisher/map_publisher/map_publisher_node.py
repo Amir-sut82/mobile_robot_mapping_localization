@@ -27,6 +27,7 @@ class MapPublisher(Node):
             qos_profile
         )
 
+        self.yaml_file = self.declare_parameter('yaml_file', '').value
         self.occupancy_grid = self.load_map()
         if self.occupancy_grid is None:
             self.get_logger().fatal('Map loading failed. Shutting down node.')
@@ -40,11 +41,19 @@ class MapPublisher(Node):
             pkg_path = get_package_share_directory('map_publisher')
             maps_path = os.path.join(pkg_path, 'maps')
 
-            yaml_file = os.path.join(maps_path, 'my_map.yaml')
+            yaml_file = os.path.expanduser(str(self.yaml_file)).strip()
+            if not yaml_file:
+                yaml_file = os.path.join(maps_path, 'my_map.yaml')
+            elif not os.path.isabs(yaml_file):
+                yaml_file = os.path.abspath(yaml_file)
+
             with open(yaml_file, 'r') as f:
                 map_metadata = yaml.safe_load(f)
 
-            pgm_file = os.path.join(maps_path, map_metadata['image'])
+            image_name = map_metadata['image']
+            pgm_file = image_name if os.path.isabs(image_name) else os.path.join(
+                os.path.dirname(yaml_file), image_name
+            )
 
             if not os.path.exists(pgm_file):
                 self.get_logger().error(f'PGM file not found: {pgm_file}')
