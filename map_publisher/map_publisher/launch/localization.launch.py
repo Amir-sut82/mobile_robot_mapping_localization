@@ -1,6 +1,7 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, IncludeLaunchDescription
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch import LaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -142,11 +143,19 @@ def generate_launch_description():
         executable='map_publisher_node',
         name='map_publisher_node',
         output='screen',
-        parameters=[{'use_sim_time': True}]
+        parameters=[
+            {'use_sim_time': True},
+            {'yaml_file': LaunchConfiguration('map_yaml')},
+        ]
     )
 
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='True'),
+        DeclareLaunchArgument(
+            'map_yaml',
+            default_value=map_yaml_file,
+            description='Absolute path to the map YAML file',
+        ),
         gz_resource_path,
         gz_sim,
         bridge,
