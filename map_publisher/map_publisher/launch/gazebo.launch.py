@@ -15,7 +15,9 @@ def generate_launch_description():
     urdf_file = os.path.join(robot_desc_dir, 'src', 'description', 'robot.urdf')
     rviz_config_file = os.path.join(robot_desc_dir, 'rviz', 'config.rviz')
     gz_bridge_config = os.path.join(robot_desc_dir, 'config', 'gz_bridge.yaml')
-    params_file = os.path.join(robot_desc_dir, 'config', 'params.yaml')
+    particle_filter_params_file = os.path.join(
+        map_pub_dir, 'config', 'particle_filter_params.yaml'
+    )
     map_yaml_file = os.path.join(map_pub_dir, 'maps', 'my_map.yaml')
 
     with open(urdf_file, 'r') as infp:
@@ -138,7 +140,7 @@ def generate_launch_description():
         output='screen',
         parameters=[
             {'use_sim_time': True},
-            params_file
+            particle_filter_params_file
         ]
     )
 
