@@ -115,13 +115,13 @@ ros2 launch map_publisher display.launch.py map_yaml:=/absolute/path/to/my_map.y
 
 ```mermaid
 flowchart LR
-  G[Gazebo + bridge] --> O[/wheel_encoder/odom + IMU + /scan]
-  O --> E[Wheel/IMU EKF]
-  E --> P[Particle filter]
-  P --> A[/amcl_pose + map→odom]
-  M[Saved map] --> L[Map publisher]
+  G["Gazebo + bridge"] --> O["wheel odom + IMU + /scan"]
+  O --> E["Wheel/IMU EKF"]
+  E --> P["Particle filter"]
+  P --> A["/amcl_pose + map to odom"]
+  M["Saved map"] --> L["Map publisher"]
   L --> P
-  A --> S[A* planner]
+  A --> S["A* planner"]
 ```
 
 The intended TF chain is `map → odom → base_link → rplidar_c1`. SLAM and the particle filter both publish a `map → odom` correction; run one localization source at a time to avoid competing TF broadcasters.
@@ -148,7 +148,7 @@ y_{t+1}=y_t+v\Delta t\sin\theta_t,\quad
 The SLAM motion model also expresses two odometry readings as
 
 \[
-\delta_{rot1}=\operatorname{atan2}(y'-y,x'-x)-\theta,\quad
+\delta_{rot1}=\mathrm{atan2}(y'-y,x'-x)-\theta,\quad
 \delta_{trans}=\sqrt{(x'-x)^2+(y'-y)^2},\quad
 \delta_{rot2}=\theta'-\theta-\delta_{rot1}.
 \]
@@ -170,7 +170,7 @@ G=\frac{\partial f}{\partial [v,\omega]}=\begin{bmatrix}
 \end{bmatrix}.
 \]
 
-With control-noise covariance $Q_u=\operatorname{diag}(\sigma_v^2,\sigma_\omega^2)$,
+With control-noise covariance $Q_u=\mathrm{diag}(\sigma_v^2,\sigma_\omega^2)$,
 
 \[
 P^- = F P F^T + GQ_uG^T.
@@ -179,7 +179,7 @@ P^- = F P F^T + GQ_uG^T.
 The IMU supplies a yaw measurement $z=\theta+v_z$, so $H=[0\;0\;1]$. The update is
 
 \[
-\nu=\operatorname{wrap}(z-Hx^-),\quad
+\nu=\mathrm{wrap}(z-Hx^-),\quad
 S=HP^-H^T+R,\quad
 K=P^-H^TS^{-1},
 \]
@@ -258,7 +258,7 @@ p(z\mid x,m)=z_{hit}\exp\left(-\frac{d^2}{2\sigma^2}\right)+\frac{z_{rand}}{z_{m
 where $d$ is the nearest occupied-map distance for a beam endpoint. The reported pose averages $x,y$ directly and averages heading on the unit circle:
 
 \[
-\hat\theta=\operatorname{atan2}\left(\sum_i\bar w_i\sin\theta_i,\sum_i\bar w_i\cos\theta_i\right).
+\hat\theta=\mathrm{atan2}\left(\sum_i\bar w_i\sin\theta_i,\sum_i\bar w_i\cos\theta_i\right).
 \]
 
 ### A* global planner
@@ -292,16 +292,6 @@ Unknown and inflated cells are treated as blocked. The node publishes `nav_msgs/
 - The A* service uses the latest `/amcl_pose` as the start pose and requires a valid localized pose before planning.
 - The map publisher resolves a relative `image:` entry relative to the YAML file, so saved maps can be moved as a pair.
 - Verify sensor frame names in RViz/TF when changing the robot model; the expected LiDAR frame is `rplidar_c1`.
-
-## Recommended project name
-
-For consistency with the companion state-estimation workspaces, rename the repository to:
-
-**`mobile_robot_mapping_localization`**
-
-Suggested GitHub title: **Mobile Robot Mapping, Localization, and A* Navigation**
-
-Suggested short description: *ROS 2 differential-drive simulation with custom 2D SLAM, wheel/IMU EKF, particle-filter localization, and an obstacle-aware A* global planner.*
 
 ## Demonstration videos
 
