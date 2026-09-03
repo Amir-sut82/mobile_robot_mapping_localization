@@ -105,10 +105,10 @@ def generate_launch_description():
         name='lidar_frame_alias_tf',
         output='screen',
         arguments=[
-            '--frame-id', 'robot/base_link',
+            '--frame-id', 'base_link',
             '--child-frame-id', 'rplidar_c1',
             '--x', '0', '--y', '0', '--z', '0.4',
-            '--roll', '0', '--pitch', '0', '--yaw',
+            '--roll', '0', '--pitch', '0', '--yaw', '0',
         ],
         parameters=[{'use_sim_time': True}]
     )
@@ -230,13 +230,13 @@ def generate_launch_description():
 
     auto_save_arg = DeclareLaunchArgument(
         'auto_save',
-        default_value='false',
+        default_value='true',
         description='Enable automatic periodic map saving'
     )
 
     auto_save_interval_arg = DeclareLaunchArgument(
         'auto_save_interval',
-        default_value='60.0',
+        default_value='5.0',
         description='Interval for auto-saving in seconds'
     )
 
