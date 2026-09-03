@@ -109,26 +109,6 @@ def generate_launch_description():
         parameters=[{'use_sim_time': True}]
     )
     
-    rtabmap_vo_node = Node(
-        package="rtabmap_odom",
-        executable="rgbd_odometry",
-        name="rtabmap_visual_odometry",
-        output="screen",
-        parameters=[
-                    vo_config_file,
-                    {
-                        "use_sim_time": True, 
-                        "publish_tf": False
-                    }
-                ],
-        remappings=[
-            ("/rgb/image", "/zed/zed_node/left/image_rect_color"),
-            ("/depth/image", "/zed/zed_node/depth/depth_registered"),
-            ("/rgb/camera_info", "/zed/zed_node/left/camera_info"),
-            ("/odom", "/vo/odom")
-        ]
-    )
-
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time',default_value='True',description='Use sim time if true'),
         DeclareLaunchArgument('urdf_file',default_value=os.path.join(bringup_dir, 'src', 'description', 'test.urdf'),description='Whether to start RVIZ'),
@@ -141,5 +121,4 @@ def generate_launch_description():
         motor_command_node,
         frame_id_converter_node, 
         ekf_diff_imu_node,
-        rtabmap_vo_node
     ])
